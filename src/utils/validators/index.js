@@ -2,4 +2,6 @@ const movieValidator = require("./movies");
 
 const reviewValidator = require("./reviews");
 
-module.exports = { movieValidator, reviewValidator };
+const actorValidator = require("./actor");
+
+module.exports = { movieValidator, reviewValidator, actorValidator };

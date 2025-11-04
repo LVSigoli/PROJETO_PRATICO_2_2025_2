@@ -5,6 +5,7 @@ class ReviewController {
     this.db = db;
   }
 
+  // GET ALL
   async getAll(req, res) {
     try {
       const result = await this.db.query(
@@ -16,6 +17,7 @@ class ReviewController {
     }
   }
 
+  // GET ONE
   async getOne(req, res) {
     try {
       const { id } = req.params;
@@ -45,6 +47,7 @@ class ReviewController {
     }
   }
 
+  // CREATE REVIEW
   async createReview(req, res) {
     try {
       const { filme_id, nome_avaliador, nota, comentario, recomendado } =
@@ -68,43 +71,73 @@ class ReviewController {
     }
   }
 
+  // UPDATE REVIEW
   async updateReview(req, res) {
     try {
       const { id } = req.params;
-      const updatedReview = req.body;
+      const { nome_avaliador, nota, comentario, recomendado } = req.body;
 
-      if (!Object.keys(updatedReview).length) {
+      if (!id) {
+        return res
+          .status(400)
+          .json({ message: message.messages.review.errors.ERRORS.missingId });
+      }
+
+      if (!Object.keys(req.body).length) {
         return res
           .status(400)
           .json({ message: "Nenhum campo enviado para atualização." });
       }
 
-      const setClause = Object.keys(updatedReview)
-        .map((field, i) => `${field} = $${i + 1}`)
-        .join(", ");
-
-      const values = Object.values(updatedReview);
-
-      const result = await this.db.query(
-        `UPDATE avaliacoes
-         SET ${setClause}, criado_em = NOW()
-         WHERE id = $${values.length + 1}
-         RETURNING *`,
-        [...values, id]
+      const check = await this.db.query(
+        "SELECT * FROM avaliacoes WHERE id=$1 AND deleted_at IS NULL",
+        [id]
       );
 
-      if (!result.rows.length) {
-        return res.status(404).json({ message: "Review não encontrada" });
+      if (!check.rows.length) {
+        return res
+          .status(404)
+          .json({ message: message.messages.review.errors.ERRORS.not_Found });
       }
+
+      const fields = [];
+      const values = [];
+      let index = 1;
+
+      if (nome_avaliador !== undefined) {
+        fields.push(`nome_avaliador = $${index++}`);
+        values.push(nome_avaliador);
+      }
+      if (nota !== undefined) {
+        fields.push(`nota = $${index++}`);
+        values.push(nota);
+      }
+      if (comentario !== undefined) {
+        fields.push(`comentario = $${index++}`);
+        values.push(comentario);
+      }
+      if (recomendado !== undefined) {
+        fields.push(`recomendado = $${index++}`);
+        values.push(recomendado);
+      }
+
+      values.push(id);
+
+      const result = await this.db.query(
+        `UPDATE avaliacoes SET ${fields.join(
+          ", "
+        )} WHERE id=$${index} RETURNING *`,
+        values
+      );
 
       res.status(200).json({
         message: "Review atualizada com sucesso",
         review: result.rows[0],
       });
     } catch (error) {
-      console.error(error);
       res.status(500).json({
         message: message.messages.review.errors.ERRORS.default,
+        error: error.message,
       });
     }
   }
