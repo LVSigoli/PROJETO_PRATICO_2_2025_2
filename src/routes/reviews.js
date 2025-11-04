@@ -79,6 +79,54 @@ router.get("/", reviewController.getAll.bind(reviewController));
  */
 router.get("/:id", reviewController.getOne.bind(reviewController));
 
-module.exports = router;
+/**
+ * @swagger
+ * /reviews/{id}:
+ *   delete:
+ *     summary: Remove uma review específica
+ *     description: Marca a review como deletada (soft delete)
+ *     tags: [Reviews]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID da review a ser removida
+ *     responses:
+ *       204:
+ *         description: Review removida com sucesso
+ *       400:
+ *         description: ID não fornecido
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "ID é obrigatório"
+ *       404:
+ *         description: Review não encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Review não encontrada"
+ *       500:
+ *         description: Erro interno no servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Erro ao remover review"
+ */
+router.delete("/:id", reviewController.delete.bind(reviewController));
 
 module.exports = router;
