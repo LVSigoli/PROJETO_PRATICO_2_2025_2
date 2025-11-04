@@ -8,12 +8,11 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors());
 
-// Define endereço do swagger
 app.use(
   "/api",
   swaggerUi.serve,
   swaggerUi.setup(specs, {
-    customCss: ".swagger-ui .topbar { display: none }", // Remove a barra de identificação do swagger.
+    customCss: ".swagger-ui .topbar { display: none }",
     customSiteTitle: "Documentação da API de exemplo",
   })
 );

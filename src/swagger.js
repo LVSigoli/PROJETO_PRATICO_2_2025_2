@@ -10,7 +10,7 @@ const options = {
       description: "Documentação da API de exemplo",
     },
   },
-  apis: ["./src/routes/*.js"], // Caminho onde estão os arquivos de rotas a serem processados
+  apis: ["./src/routes/*.js"],
 };
 
 const specs = swaggerJsdoc(options);
