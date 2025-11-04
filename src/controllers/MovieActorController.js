@@ -48,8 +48,9 @@ class MovieActorController {
 
   async getByActor(req, res) {
     try {
-      const { actor_id } = req.params;
-      if (!actor_id) {
+      const { ator_id } = req.params;
+
+      if (!ator_id) {
         return res
           .status(400)
           .json({ message: message.messages.actor.errors.ERRORS.missingId });
@@ -57,13 +58,13 @@ class MovieActorController {
 
       const result = await this.db.query(
         `
-        SELECT f.id, f.titulo, f.ano_lancamento, f.genero, fa.papel, fa.ordem_credito
+        SELECT f.id, f.titulo, f.lancamento, f.genero, fa.papel, fa.ordem_credito
         FROM filmes_atores fa
         JOIN filmes f ON fa.filme_id = f.id
         WHERE fa.ator_id = $1
         ORDER BY fa.ordem_credito ASC
         `,
-        [actor_id]
+        [ator_id]
       );
 
       res.status(200).json(result.rows);
@@ -188,4 +189,4 @@ class MovieActorController {
   }
 }
 
-module.exports = { MovieActorController };
+module.exports = MovieActorController;

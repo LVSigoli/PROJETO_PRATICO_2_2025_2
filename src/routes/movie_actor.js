@@ -16,10 +16,10 @@ const movieActorController = new MovieActorController(db);
 
 /**
  * @swagger
- * /filme-atores:
+ * /movie-actors:
  *   get:
  *     summary: Lista todas as relações de filmes e atores
- *     tags: [Filmes-Atores]
+ *     tags: [Movies-Actors]
  *     responses:
  *       200:
  *         description: Relações retornadas com sucesso
@@ -30,10 +30,10 @@ router.get("/", movieActorController.getAll.bind(movieActorController));
 
 /**
  * @swagger
- * /filme-atores/movie/{filme_id}:
+ * /movie-actors/movie/{filme_id}:
  *   get:
  *     summary: Lista todos os atores de um filme específico
- *     tags: [Filmes-Atores]
+ *     tags: [Movies-Actors]
  *     parameters:
  *       - in: path
  *         name: filme_id
@@ -57,10 +57,10 @@ router.get(
 
 /**
  * @swagger
- * /filme-atores/actor/{ator_id}:
+ * /movie-actors/actor/{ator_id}:
  *   get:
  *     summary: Lista todos os filmes de um ator específico
- *     tags: [Filmes-Atores]
+ *     tags: [Movies-Actors]
  *     parameters:
  *       - in: path
  *         name: ator_id
@@ -84,10 +84,10 @@ router.get(
 
 /**
  * @swagger
- * /filme-atores:
+ * /movie-actors:
  *   post:
  *     summary: Cria uma nova relação filme-ator
- *     tags: [Filmes-Atores]
+ *     tags: [Movies-Actors]
  *     requestBody:
  *       required: true
  *       content:
@@ -124,10 +124,10 @@ router.post(
 
 /**
  * @swagger
- * /filme-atores/{filme_id}/{ator_id}:
+ * /movie-actors/{filme_id}/{ator_id}:
  *   put:
  *     summary: Atualiza uma relação filme-ator existente
- *     tags: [Filmes-Atores]
+ *     tags: [Movies-Actors]
  *     parameters:
  *       - in: path
  *         name: filme_id
@@ -170,10 +170,10 @@ router.put(
 
 /**
  * @swagger
- * /filme-atores/{filme_id}/{ator_id}:
+ * /movie-actors/{filme_id}/{ator_id}:
  *   delete:
  *     summary: Remove uma relação filme-ator
- *     tags: [Filmes-Atores]
+ *     tags: [Movies-Actors]
  *     parameters:
  *       - in: path
  *         name: filme_id
