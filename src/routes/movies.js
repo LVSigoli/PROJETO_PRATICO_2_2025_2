@@ -9,7 +9,7 @@ const db = require("../dataBase");
  *   get:
  *     summary: Lista todos os filmes
  *     description: Retorna todos os filmes ativos (sem deleted_at)
- *     tags: [Filmes]
+ *     tags: [Movies]
  *     responses:
  *       200:
  *         description: Lista de filmes retornada com sucesso
@@ -44,7 +44,7 @@ router.get("/", async (req, res) => {
  * @swagger
  * /movies/{id}:
  *   get:
- *     summary: Retorna um filme específico pelo ID
+ *     summary: Retorna um filme específico
  *     tags: [Movies]
  *     parameters:
  *       - in: path
@@ -56,7 +56,7 @@ router.get("/", async (req, res) => {
  *     responses:
  *       200:
  *         description: Filme encontrado
- *        400:
+ *       400:
  *        description: parametro Id é obrigatório
  *       404:
  *         description: Filme não encontrado
@@ -113,7 +113,7 @@ router.delete("/:id", async (req, res) => {
     if (!id) return res.status(400).json({ message: "Id é obrigatório" });
 
     const result = await db.query(
-      "UPDATE deleted_at = NOW() FROM filmes WHERE id =$1",
+      "UPDATE deleted_at = NOW() FROM filmes WHERE id = $1",
       [id]
     );
 
