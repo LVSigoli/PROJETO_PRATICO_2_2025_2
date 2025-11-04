@@ -1,3 +1,3 @@
-const createMovieValidator = require("./movieValidator");
+const { createMovieValidator } = require("./movieValidator");
 
 module.exports = { createMovieValidator };

@@ -6,7 +6,7 @@ const REQUIRED_FIELDS = [
   "duracao_min",
 ];
 
-function movieValidator(req, res, next) {
+function createMovieValidator(req, res, next) {
   const body = req.body;
 
   const missingFields = REQUIRED_FIELDS.filter(
@@ -74,4 +74,4 @@ function checkErros(body) {
   return errors;
 }
 
-module.exports = { movieValidator };
+module.exports = { createMovieValidator };
