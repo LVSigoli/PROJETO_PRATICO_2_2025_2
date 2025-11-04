@@ -5,9 +5,9 @@ const options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Template Express Docker",
+      title: "Documentação da API de Filmes 🎥",
       version: "1.0.0",
-      description: "Documentação da API de exemplo",
+      description: "Documentação da api de review de filmes!",
     },
   },
   apis: ["./src/routes/*.js"],

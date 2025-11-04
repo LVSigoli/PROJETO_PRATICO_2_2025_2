@@ -36,11 +36,10 @@ app.use(express.json());
 app.use(cors());
 
 app.use(
-  "/api-docs",
+  "/api",
   swaggerUi.serve,
   swaggerUi.setup(specs, {
     customCss: ".swagger-ui .topbar { display: none }",
-    customSiteTitle: "Documentação da API de Filmes 🎥",
   })
 );
 

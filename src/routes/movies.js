@@ -1,10 +1,17 @@
+// External Libraries
 const express = require("express");
-const router = express.Router();
 
+// Controllers
+const { MovieController } = require("../controllers");
+
+// Utils
 const db = require("../dataBase");
 const { movieValidator } = require("../utils/validators");
 
-movieValidator.createMovie;
+// Constants
+const router = express.Router();
+const movieController = new MovieController(db);
+
 /**
  * @swagger
  * /movies:
@@ -69,16 +76,7 @@ movieValidator.createMovie;
  *                   example: "Erro ao buscar filmes"
  */
 
-router.get("/", async (req, res) => {
-  try {
-    const result = await db.query(
-      "SELECT * FROM filmes WHERE deleted_at IS NULL"
-    );
-    res.json(result.rows);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+router.get("/", movieController.getAllMovies.bind(movieController));
 
 /**
  * @swagger
@@ -153,26 +151,7 @@ router.get("/", async (req, res) => {
  *                   example: "Erro no servidor"
  */
 
-router.get("/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    if (!id) return res.status(400).json({ message: "id é obrigatório" });
-
-    const result = await db.query(
-      "SELECT * FROM filmes WHERE id=$1 AND deleted_at IS NULL",
-      [id]
-    );
-
-    if (!result.rows.length) {
-      return res.status(404).json({ message: "Filme não encontrado" });
-    }
-
-    res.status(200).json(result.rows[0]);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+router.get("/:id", movieController.getMovieById.bind(movieController));
 
 /**
  * @swagger
@@ -234,40 +213,7 @@ router.get("/:id", async (req, res) => {
  *                   example: Erro ao remover filme
  */
 
-router.delete("/:id", async (req, res) => {
-  const { id } = req.params;
-
-  if (!id) return res.status(400).json({ message: "Id é obrigatório" });
-
-  try {
-    await db.transaction(async (client) => {
-      const check = await client.query(
-        "SELECT * FROM filmes WHERE id = $1 AND deleted_at IS NULL",
-        [id]
-      );
-
-      if (!check.rows.length) {
-        throw { status: 404, message: "Filme não encontrado" };
-      }
-
-      await client.query("DELETE FROM filmes_atores WHERE filme_id = $1", [id]);
-
-      const result = await client.query(
-        "UPDATE filmes SET deleted_at = NOW() WHERE id = $1 RETURNING *",
-        [id]
-      );
-
-      res.status(200).json({
-        message: "Filme e relações removidos com sucesso",
-        movie: result.rows[0],
-      });
-    });
-  } catch (error) {
-    res
-      .status(error.status || 500)
-      .json({ message: error.message || "Erro ao remover filme" });
-  }
-});
+router.delete("/:id", movieController.deleteMovie.bind(movieController));
 
 /**
  * @swagger
@@ -344,24 +290,61 @@ router.delete("/:id", async (req, res) => {
  *         description: Erro no servidor ao criar filme
  */
 
-router.post("/", movieValidator.createMovieValidator, async (req, res) => {
-  try {
-    const { titulo, genero, duracao_min, lancamento, em_cartaz } = req.body;
+router.post(
+  "/",
+  movieValidator.createMovieValidator,
+  movieController.createMovie.bind(movieController)
+);
 
-    const result = await db.query(
-      `INSERT INTO filmes (titulo, genero, duracao_min, lancamento, em_cartaz)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING *`,
-      [titulo, genero, duracao_min, lancamento, em_cartaz]
-    );
-
-    res.status(201).json({
-      message: "Filme criado com sucesso",
-      filme: result.rows[0],
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message || "Erro ao criar filme" });
-  }
-});
+/**
+ * @swagger
+ * /movies/{id}:
+ *   put:
+ *     summary: Atualiza um filme existente
+ *     description: Atualiza os dados de um filme pelo ID. Nenhum campo é obrigatório.
+ *     tags: [Movies]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: ID do filme a ser atualizado
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               titulo:
+ *                 type: string
+ *               sinopse:
+ *                 type: string
+ *               genero:
+ *                 type: string
+ *               duracao_min:
+ *                 type: integer
+ *               lancamento:
+ *                 type: string
+ *                 format: date
+ *               em_cartaz:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Filme atualizado com sucesso
+ *       400:
+ *         description: Requisição inválida
+ *       404:
+ *         description: Filme não encontrado
+ *       500:
+ *         description: Erro no servidor
+ */
+router.put(
+  "/:id",
+  movieValidator.updateMovieValidator,
+  movieController.updateMovie.bind(movieController)
+);
 
 module.exports = router;
