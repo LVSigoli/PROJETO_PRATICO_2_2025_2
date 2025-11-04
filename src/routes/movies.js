@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 
 const db = require("../dataBase");
+const { movieValidator } = require("../utils/validators");
+
+movieValidator.createMovie;
 
 /**
  * @swagger
@@ -107,23 +110,62 @@ router.get("/:id", async (req, res) => {
  */
 
 router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) return res.status(400).json({ message: "Id é obrigatório" });
+
   try {
-    const { id } = req.params;
+    await db.transaction(async (client) => {
+      const check = await client.query(
+        "SELECT * FROM filmes WHERE id = $1 AND deleted_at IS NULL",
+        [id]
+      );
 
-    if (!id) return res.status(400).json({ message: "Id é obrigatório" });
+      if (!check.rows.length) {
+        throw { status: 404, message: "Filme não encontrado" };
+      }
 
-    const result = await db.query(
-      "UPDATE deleted_at = NOW() FROM filmes WHERE id = $1",
-      [id]
-    );
+      await client.query("DELETE FROM filmes_atores WHERE filme_id = $1", [id]);
 
-    if (result.rowCount === 0)
-      return res.status(404).json({ message: "Filme não encontrado" });
+      const result = await client.query(
+        "UPDATE filmes SET deleted_at = NOW() WHERE id = $1 RETURNING *",
+        [id]
+      );
 
-    res.status(200).json({ message: "Filme removido", movie: result.rows[0] });
+      res.status(200).json({
+        message: "Filme e relações removidos com sucesso",
+        movie: result.rows[0],
+      });
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res
+      .status(error.status || 500)
+      .json({ message: error.message || "Erro ao remover filme" });
   }
 });
+
+router.post(
+  "/movies",
+  movieValidator.createMovieValidator,
+  async (req, res) => {
+    try {
+      const { titulo, genero, duracao_min, lancamento, em_cartaz } = req.body;
+
+      const result = await db.query(
+        `INSERT INTO filmes (titulo, genero, duracao_min, lancamento, em_cartaz)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+        [titulo, genero, duracao_min, lancamento, em_cartaz]
+      );
+
+      res.status(201).json({
+        message: "Filme criado com sucesso",
+        filme: result.rows[0],
+      });
+    } catch (error) {
+      res.status(500).json({ message: error.message || "Erro ao criar filme" });
+    }
+  }
+);
 
 module.exports = router;
