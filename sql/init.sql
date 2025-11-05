@@ -46,43 +46,31 @@ CREATE TABLE IF NOT EXISTS avaliacoes (
   FOREIGN KEY (filme_id) REFERENCES filmes(id) ON DELETE CASCADE
 );
 
+CREATE OR REPLACE FUNCTION update_filme_nota_media()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE filmes
+  SET nota_media = (
+    SELECT COALESCE(AVG(nota), 0)
+    FROM avaliacoes
+    WHERE filme_id = NEW.filme_id AND deleted_at IS NULL
+  ),
+  updated_at = now()
+  WHERE id = NEW.filme_id;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;  
+
+CREATE TRIGGER IF NOT EXISTS trg_update_filmes_nota_media
+AFTER INSERT OR UPDATE OR DELETE ON avaliacoes
+FOR EACH ROW
+EXECUTE PROCEDURE update_filme_nota_media(); 
+
 CREATE INDEX IF NOT EXISTS idx_filmes_deleted_at ON filmes (deleted_at);
 
 CREATE INDEX IF NOT EXISTS idx_atores_deleted_at ON atores (deleted_at);
 
 CREATE INDEX IF NOT EXISTS idx_avaliacoes_deleted_at ON avaliacoes (deleted_at);
-
-CREATE OR REPLACE FUNCTION atualizar_nota_media_filme()
-RETURNS TRIGGER AS $$
-BEGIN
-  UPDATE filmes
-  SET nota_media = COALESCE((
-    SELECT ROUND(AVG(nota)::numeric, 2)
-    FROM avaliacoes
-    WHERE filme_id = NEW.filme_id
-      AND deleted_at IS NULL
-  ), 0)
-  WHERE id = COALESCE(NEW.filme_id, OLD.filme_id);
-
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE TRIGGER trg_avaliacoes_after_insert
-AFTER INSERT ON avaliacoes
-FOR EACH ROW
-EXECUTE FUNCTION atualizar_nota_media_filme();
-
-CREATE OR REPLACE TRIGGER trg_avaliacoes_after_update
-AFTER UPDATE ON avaliacoes
-FOR EACH ROW
-EXECUTE FUNCTION atualizar_nota_media_filme();
-
-CREATE OR REPLACE TRIGGER trg_avaliacoes_after_delete
-AFTER DELETE ON avaliacoes
-FOR EACH ROW
-EXECUTE FUNCTION atualizar_nota_media_filme();
-
 
 INSERT INTO filmes (titulo, genero, duracao_min, lancamento, em_cartaz)
 
