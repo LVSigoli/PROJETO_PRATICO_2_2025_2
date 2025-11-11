@@ -179,7 +179,7 @@ class MovieActorController {
           .json({ message: message.messages.actor.errors.ERRORS.not_Found });
       }
 
-      res.status(204).send();
+      res.status(204);
     } catch (error) {
       res.status(500).json({
         message: message.messages.actor.errors.ERRORS.default,

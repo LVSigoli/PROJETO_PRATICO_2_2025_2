@@ -99,7 +99,7 @@ class ActorController {
       if (!result.rows.length)
         return res.status(404).json({ message: "Ator não encontrado" });
 
-      res.status(204).json({ message: "Ator removido com sucesso" });
+      res.status(204);
     } catch (error) {
       res.status(500).json({ message: message.messages.actor.errors.default });
     }

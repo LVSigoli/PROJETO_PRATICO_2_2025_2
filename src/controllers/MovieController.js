@@ -60,10 +60,7 @@ class MovieController {
           [id]
         );
 
-        res.status(200).json({
-          message: "Filme e relações removidos com sucesso",
-          movie: result.rows[0],
-        });
+        res.status(204);
       });
     } catch (error) {
       res
