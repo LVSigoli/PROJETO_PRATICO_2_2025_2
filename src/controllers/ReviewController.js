@@ -56,10 +56,7 @@ class ReviewController {
         [filme_id, nome_avaliador, nota, comentario, recomendado || false]
       );
 
-      res.status(201).json({
-        message: "Review criada com sucesso",
-        review: result.rows[0],
-      });
+      res.status(201).json({ message: "Review criada com sucesso" });
     } catch (error) {
       res.status(500).json({
         message: message.messages.review.errors.ERRORS.default,
@@ -126,10 +123,7 @@ class ReviewController {
         values
       );
 
-      res.status(200).json({
-        message: "Review atualizada com sucesso",
-        review: result.rows[0],
-      });
+      res.status(200).json({ message: "Review atualizada com sucesso" });
     } catch (error) {
       res.status(500).json({
         message: message.messages.review.errors.ERRORS.default,
