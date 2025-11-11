@@ -44,22 +44,30 @@ class ReviewController {
         .json({ message: message.messages.review.errors.ERRORS.default });
     }
   }
-
   async createReview(req, res) {
     try {
       const { filme_id, nome_avaliador, nota, comentario, recomendado } =
         req.body;
 
-      const result = await this.db.query(
+      const filme = await this.db.query(`SELECT id FROM filmes WHERE id = $1`, [
+        filme_id,
+      ]);
+
+      if (filme.rowCount === 0) {
+        return res.status(404).json({ message: "Filme não encontrado" });
+      }
+
+      // Cria a avaliação
+      await this.db.query(
         `INSERT INTO avaliacoes (filme_id, nome_avaliador, nota, comentario, recomendado)
-         VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-        [filme_id, nome_avaliador, nota, comentario, recomendado || false]
+       VALUES ($1, $2, $3, $4, $5)`,
+        [filme_id, nome_avaliador, nota, comentario, recomendado ?? false]
       );
 
       res.status(201).json({ message: "Review criada com sucesso" });
     } catch (error) {
       res.status(500).json({
-        message: message.messages.review.errors.ERRORS.default,
+        message: "Erro ao criar review",
         error: error.message,
       });
     }
