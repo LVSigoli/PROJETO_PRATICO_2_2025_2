@@ -31,17 +31,16 @@ const updatedRelation = {
 };
 
 describe("🎬 Rotas de Relações Filme-Ator (/movie-actors)", () => {
-  // Prepara ator e filme válidos para usar nas relações
   before((done) => {
-    // 1) Cria ator
-    request.execute(uri)
+    request
+      .execute(uri)
       .post("/actors")
       .send(newActor)
       .end((err, res) => {
         expect(res).to.have.status(201);
 
-        // POST /actors não devolve o ator completo -> pegamos o último da lista
-        request.execute(uri)
+        request
+          .execute(uri)
           .get("/actors")
           .end((err2, res2) => {
             expect(res2).to.have.status(200);
@@ -51,8 +50,8 @@ describe("🎬 Rotas de Relações Filme-Ator (/movie-actors)", () => {
             expect(lastActor).to.have.property("id");
             actorId = lastActor.id;
 
-            // 2) Cria filme
-            request.execute(uri)
+            request
+              .execute(uri)
               .post("/movies")
               .send(newMovie)
               .end((err3, res3) => {
@@ -71,7 +70,6 @@ describe("🎬 Rotas de Relações Filme-Ator (/movie-actors)", () => {
       });
   });
 
-  // --- POST /movie-actors ---
   describe("POST /movie-actors - Criar relação", () => {
     it("Deve criar uma nova relação filme-ator (201)", (done) => {
       const payload = {
@@ -81,14 +79,14 @@ describe("🎬 Rotas de Relações Filme-Ator (/movie-actors)", () => {
         ordem_credito: 1,
       };
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .post("/movie-actors")
         .send(payload)
         .end((err, res) => {
           expect(res).to.have.status(201);
           expect(res.body).to.be.an("object");
 
-          // sua API pode devolver direto o objeto ou embrulhar, então deixamos flex
           const relation = res.body.relation || res.body;
 
           expect(relation).to.have.property("filme_id").that.equals(movieId);
@@ -101,7 +99,8 @@ describe("🎬 Rotas de Relações Filme-Ator (/movie-actors)", () => {
     it("Deve retornar 400 se IDs obrigatórios estiverem ausentes", (done) => {
       const invalidRelation = { papel: "Figurante" };
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .post("/movie-actors")
         .send(invalidRelation)
         .end((err, res) => {
@@ -112,10 +111,10 @@ describe("🎬 Rotas de Relações Filme-Ator (/movie-actors)", () => {
     });
   });
 
-  // --- GET /movie-actors ---
   describe("GET /movie-actors - Listar todas as relações", () => {
     it("Deve retornar status 200 e uma lista de relações contendo a criada", (done) => {
-      request.execute(uri)
+      request
+        .execute(uri)
         .get("/movie-actors")
         .end((err, res) => {
           expect(res).to.have.status(200);
@@ -131,10 +130,10 @@ describe("🎬 Rotas de Relações Filme-Ator (/movie-actors)", () => {
     });
   });
 
-  // --- GET /movie-actors/movie/:filme_id ---
   describe("GET /movie-actors/movie/:filme_id - Listar atores de um filme", () => {
     it("Deve retornar status 200 e lista de atores", (done) => {
-      request.execute(uri)
+      request
+        .execute(uri)
         .get(`/movie-actors/movie/${movieId}`)
         .end((err, res) => {
           expect(res).to.have.status(200);
@@ -144,10 +143,10 @@ describe("🎬 Rotas de Relações Filme-Ator (/movie-actors)", () => {
     });
   });
 
-  // --- GET /movie-actors/actor/:ator_id ---
   describe("GET /movie-actors/actor/:ator_id - Listar filmes de um ator", () => {
     it("Deve retornar status 200 e lista de filmes", (done) => {
-      request.execute(uri)
+      request
+        .execute(uri)
         .get(`/movie-actors/actor/${actorId}`)
         .end((err, res) => {
           expect(res).to.have.status(200);
@@ -157,10 +156,10 @@ describe("🎬 Rotas de Relações Filme-Ator (/movie-actors)", () => {
     });
   });
 
-  // --- PUT /movie-actors/:filme_id/:ator_id ---
   describe("PUT /movie-actors/:filme_id/:ator_id - Atualizar relação", () => {
     it("Deve retornar 200 ao atualizar a relação", (done) => {
-      request.execute(uri)
+      request
+        .execute(uri)
         .put(`/movie-actors/${movieId}/${actorId}`)
         .send(updatedRelation)
         .end((err, res) => {
@@ -181,7 +180,8 @@ describe("🎬 Rotas de Relações Filme-Ator (/movie-actors)", () => {
       const fakeMovie = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
       const fakeActor = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .put(`/movie-actors/${fakeMovie}/${fakeActor}`)
         .send(updatedRelation)
         .end((err, res) => {
@@ -191,10 +191,10 @@ describe("🎬 Rotas de Relações Filme-Ator (/movie-actors)", () => {
     });
   });
 
-  // --- DELETE /movie-actors/:filme_id/:ator_id ---
   describe("DELETE /movie-actors/:filme_id/:ator_id - Remover relação", () => {
     it("Deve retornar 204 ao remover a relação", (done) => {
-      request.execute(uri)
+      request
+        .execute(uri)
         .delete(`/movie-actors/${movieId}/${actorId}`)
         .end((err, res) => {
           expect(res).to.have.status(204);
@@ -206,7 +206,8 @@ describe("🎬 Rotas de Relações Filme-Ator (/movie-actors)", () => {
       const fakeMovie = "cccccccc-cccc-cccc-cccc-cccccccccccc";
       const fakeActor = "dddddddd-dddd-dddd-dddd-dddddddddddd";
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .delete(`/movie-actors/${fakeMovie}/${fakeActor}`)
         .end((err, res) => {
           expect(res).to.have.status(404);

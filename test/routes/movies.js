@@ -25,17 +25,16 @@ const updateMovie = {
 let movieId;
 
 describe("🎬 Rotas de Filmes (/movies)", () => {
-  // --- POST /movies ---
   describe("POST /movies - Criar Filme", () => {
     it("Deve criar um novo filme e retornar 201 com o objeto filme", (done) => {
-      request.execute(uri)
+      request
+        .execute(uri)
         .post("/movies")
         .send(newMovie)
         .end((err, res) => {
           expect(res).to.have.status(201);
           expect(res.body).to.be.an("object");
 
-          // Aceita { filme: {...} } ou objeto direto (fallback)
           let filme = res.body.filme || res.body.movie || res.body;
 
           if (filme && filme.id) {
@@ -44,8 +43,8 @@ describe("🎬 Rotas de Filmes (/movies)", () => {
             return done();
           }
 
-          // Se não veio o filme no corpo, busca na lista e pega o último com o mesmo título
-          request.execute(uri)
+          request
+            .execute(uri)
             .get("/movies")
             .end((err2, res2) => {
               expect(res2).to.have.status(200);
@@ -55,7 +54,8 @@ describe("🎬 Rotas de Filmes (/movies)", () => {
                 .reverse()
                 .find((m) => m.titulo === newMovie.titulo);
 
-              expect(candidate, "Não foi possível localizar o filme criado").to.exist;
+              expect(candidate, "Não foi possível localizar o filme criado").to
+                .exist;
               movieId = candidate.id;
               expect(movieId).to.be.a("string");
 
@@ -69,7 +69,8 @@ describe("🎬 Rotas de Filmes (/movies)", () => {
         titulo: "Filme Incompleto",
       };
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .post("/movies")
         .send(invalidMovie)
         .end((err, res) => {
@@ -81,12 +82,12 @@ describe("🎬 Rotas de Filmes (/movies)", () => {
     });
   });
 
-  // --- GET /movies ---
   describe("GET /movies - Listar Filmes", () => {
     it("Deve retornar 200 e uma lista de filmes contendo o criado", (done) => {
       expect(movieId, "movieId não definido antes do GET /movies").to.exist;
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .get("/movies")
         .end((err, res) => {
           expect(res).to.have.status(200);
@@ -100,12 +101,12 @@ describe("🎬 Rotas de Filmes (/movies)", () => {
     });
   });
 
-  // --- GET /movies/:id ---
   describe("GET /movies/:id - Buscar Filme por ID", () => {
     it("Deve retornar 200 e o filme específico", (done) => {
       expect(movieId).to.exist;
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .get(`/movies/${movieId}`)
         .end((err, res) => {
           expect(res).to.have.status(200);
@@ -120,7 +121,8 @@ describe("🎬 Rotas de Filmes (/movies)", () => {
     it("Deve retornar 404 para um ID que não existe", (done) => {
       const nonExistentId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .get(`/movies/${nonExistentId}`)
         .end((err, res) => {
           expect(res).to.have.status(404);
@@ -131,12 +133,12 @@ describe("🎬 Rotas de Filmes (/movies)", () => {
     });
   });
 
-  // --- PUT /movies/:id ---
   describe("PUT /movies/:id - Atualizar Filme", () => {
     it("Deve retornar 200 e atualizar o filme com sucesso", (done) => {
       expect(movieId).to.exist;
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .put(`/movies/${movieId}`)
         .send(updateMovie)
         .end((err, res) => {
@@ -146,9 +148,15 @@ describe("🎬 Rotas de Filmes (/movies)", () => {
           const filme = res.body.filme || res.body;
 
           expect(String(filme.id)).to.equal(String(movieId));
-          expect(filme).to.have.property("titulo").that.equals(updateMovie.titulo);
-          expect(filme).to.have.property("genero").that.equals(updateMovie.genero);
-          expect(filme).to.have.property("em_cartaz").that.equals(updateMovie.em_cartaz);
+          expect(filme)
+            .to.have.property("titulo")
+            .that.equals(updateMovie.titulo);
+          expect(filme)
+            .to.have.property("genero")
+            .that.equals(updateMovie.genero);
+          expect(filme)
+            .to.have.property("em_cartaz")
+            .that.equals(updateMovie.em_cartaz);
 
           done();
         });
@@ -157,7 +165,8 @@ describe("🎬 Rotas de Filmes (/movies)", () => {
     it("Deve retornar 404 para um ID de filme que não existe", (done) => {
       const nonExistentId = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .put(`/movies/${nonExistentId}`)
         .send(updateMovie)
         .end((err, res) => {
@@ -169,7 +178,8 @@ describe("🎬 Rotas de Filmes (/movies)", () => {
     });
 
     it("Deve retornar 400 se o body estiver vazio", (done) => {
-      request.execute(uri)
+      request
+        .execute(uri)
         .put(`/movies/${movieId}`)
         .send({})
         .end((err, res) => {
@@ -186,7 +196,8 @@ describe("🎬 Rotas de Filmes (/movies)", () => {
     it("Deve retornar 200 e remover o filme", (done) => {
       expect(movieId).to.exist;
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .delete(`/movies/${movieId}`)
         .end((err, res) => {
           expect(res).to.have.status(200);
@@ -197,7 +208,8 @@ describe("🎬 Rotas de Filmes (/movies)", () => {
     });
 
     it("Deve retornar 404 ao buscar o filme removido", (done) => {
-      request.execute(uri)
+      request
+        .execute(uri)
         .get(`/movies/${movieId}`)
         .end((err, res) => {
           expect(res).to.have.status(404);
@@ -208,7 +220,8 @@ describe("🎬 Rotas de Filmes (/movies)", () => {
     it("Deve retornar 404 ao tentar remover um filme inexistente", (done) => {
       const nonExistentId = "cccccccc-cccc-cccc-cccc-cccccccccccc";
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .delete(`/movies/${nonExistentId}`)
         .end((err, res) => {
           expect(res).to.have.status(404);

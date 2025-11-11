@@ -33,11 +33,9 @@ let filmeId;
 let reviewId;
 
 describe("⭐ Rotas de Reviews (/reviews)", () => {
-  //
-  // BEFORE: cria um filme válido para usar nas reviews
-  //
   before((done) => {
-    request.execute(uri)
+    request
+      .execute(uri)
       .post("/movies")
       .send(newMovie)
       .end((err, res) => {
@@ -50,9 +48,6 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
       });
   });
 
-  //
-  // POST /reviews
-  //
   describe("POST /reviews - Criar Review", () => {
     it("Deve criar uma nova review (201) com filme_id válido e definir reviewId", (done) => {
       const newReview = {
@@ -60,14 +55,14 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
         filme_id: filmeId,
       };
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .post("/reviews")
         .send(newReview)
         .end((err, res) => {
           expect(res).to.have.status(201);
           expect(res.body).to.be.an("object");
 
-          // Tenta usar se a API devolver { review: {...} } ou {...}
           const maybeReview = res.body.review || res.body;
 
           if (maybeReview && maybeReview.id) {
@@ -76,16 +71,16 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
             return done();
           }
 
-          // Fallback: buscar na lista e pegar a review recém-criada
-          request.execute(uri)
+          request
+            .execute(uri)
             .get("/reviews")
             .end((err2, res2) => {
               expect(res2).to.have.status(200);
               expect(res2.body).to.be.an("array").that.is.not.empty;
 
               const created = res2.body
-                .slice() // copia
-                .reverse() // começa do fim
+                .slice()
+                .reverse()
                 .find(
                   (r) =>
                     String(r.filme_id) === String(filmeId) &&
@@ -94,7 +89,8 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
                     r.comentario === newReviewBase.comentario
                 );
 
-              expect(created, "Não foi possível localizar a review criada").to.exist;
+              expect(created, "Não foi possível localizar a review criada").to
+                .exist;
               reviewId = created.id;
               expect(reviewId).to.be.a("string");
               done();
@@ -106,10 +102,10 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
       const invalidReview = {
         filme_id: filmeId,
         nota: 8,
-        // falta nome_avaliador
       };
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .post("/reviews")
         .send(invalidReview)
         .end((err, res) => {
@@ -121,17 +117,16 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
     });
   });
 
-  //
-  // GET /reviews
-  //
   describe("GET /reviews - Listar Reviews", () => {
     it("Deve retornar 200 e uma lista de reviews contendo a criada", (done) => {
-      request.execute(uri)
+      request
+        .execute(uri)
         .get("/reviews")
         .end((err, res) => {
           expect(res).to.have.status(200);
           expect(res.body).to.be.an("array");
-          expect(reviewId, "reviewId deveria estar definido antes deste teste").to.exist;
+          expect(reviewId, "reviewId deveria estar definido antes deste teste")
+            .to.exist;
 
           const found = res.body.some((r) => String(r.id) === String(reviewId));
           expect(found).to.be.true;
@@ -141,14 +136,13 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
     });
   });
 
-  //
-  // GET /reviews/:id
-  //
   describe("GET /reviews/:id - Buscar Review por ID", () => {
     it("Deve retornar 200 e a review específica", (done) => {
-      expect(reviewId, "reviewId não definido antes do GET /reviews/:id").to.exist;
+      expect(reviewId, "reviewId não definido antes do GET /reviews/:id").to
+        .exist;
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .get(`/reviews/${reviewId}`)
         .end((err, res) => {
           expect(res).to.have.status(200);
@@ -161,7 +155,8 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
     it("Deve retornar 404 para ID inexistente", (done) => {
       const nonExistentId = "99999999-9999-9999-9999-999999999999";
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .get(`/reviews/${nonExistentId}`)
         .end((err, res) => {
           expect(res).to.have.status(404);
@@ -170,14 +165,13 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
     });
   });
 
-  //
-  // PUT /reviews/:id
-  //
   describe("PUT /reviews/:id - Atualizar Review", () => {
     it("Deve atualizar a review existente e retornar 200 (ou 204)", (done) => {
-      expect(reviewId, "reviewId não definido antes do PUT /reviews/:id").to.exist;
+      expect(reviewId, "reviewId não definido antes do PUT /reviews/:id").to
+        .exist;
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .put(`/reviews/${reviewId}`)
         .send(updateReview)
         .end((err, res) => {
@@ -199,7 +193,8 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
     });
 
     it("Deve retornar 400 se nenhum campo for enviado", (done) => {
-      request.execute(uri)
+      request
+        .execute(uri)
         .put(`/reviews/${reviewId}`)
         .send({})
         .end((err, res) => {
@@ -213,7 +208,8 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
     it("Deve retornar 404 para review inexistente", (done) => {
       const nonExistentId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .put(`/reviews/${nonExistentId}`)
         .send(updateReview)
         .end((err, res) => {
@@ -223,14 +219,13 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
     });
   });
 
-  //
-  // DELETE /reviews/:id
-  //
   describe("DELETE /reviews/:id - Remover Review", () => {
     it("Deve retornar 204 ao remover a review existente", (done) => {
-      expect(reviewId, "reviewId não definido antes do DELETE /reviews/:id").to.exist;
+      expect(reviewId, "reviewId não definido antes do DELETE /reviews/:id").to
+        .exist;
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .delete(`/reviews/${reviewId}`)
         .end((err, res) => {
           expect(res).to.have.status(204);
@@ -239,7 +234,8 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
     });
 
     it("Deve retornar 404 ao buscar a review removida", (done) => {
-      request.execute(uri)
+      request
+        .execute(uri)
         .get(`/reviews/${reviewId}`)
         .end((err, res) => {
           expect(res).to.have.status(404);
@@ -250,7 +246,8 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
     it("Deve retornar 404 ao tentar remover review inexistente", (done) => {
       const nonExistentId = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
 
-      request.execute(uri)
+      request
+        .execute(uri)
         .delete(`/reviews/${nonExistentId}`)
         .end((err, res) => {
           expect(res).to.have.status(404);

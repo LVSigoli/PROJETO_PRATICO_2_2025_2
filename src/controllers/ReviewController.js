@@ -57,7 +57,6 @@ class ReviewController {
         return res.status(404).json({ message: "Filme não encontrado" });
       }
 
-      // Cria a avaliação
       await this.db.query(
         `INSERT INTO avaliacoes (filme_id, nome_avaliador, nota, comentario, recomendado)
        VALUES ($1, $2, $3, $4, $5)`,
