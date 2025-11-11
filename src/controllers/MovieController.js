@@ -72,7 +72,7 @@ class MovieController {
     }
   }
 
-  async createMovie() {
+  async createMovie(req, res) {
     try {
       const { titulo, genero, duracao_min, lancamento, em_cartaz } = req.body;
 

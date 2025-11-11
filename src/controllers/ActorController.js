@@ -48,10 +48,7 @@ class ActorController {
         [nome, nascimento, biografia, nacionalidade]
       );
 
-      res.status(201).json({
-        message: "Ator criado com sucesso",
-        actor: result.rows[0],
-      });
+      res.status(201).json({ message: "Ator criado com sucesso" });
     } catch (error) {
       res.status(500).json({ message: message.messages.actor.errors.default });
     }
@@ -83,10 +80,7 @@ class ActorController {
       if (!result.rows.length)
         return res.status(404).json({ message: "Ator não encontrado" });
 
-      res.status(200).json({
-        message: "Ator atualizado com sucesso",
-        actor: result.rows[0],
-      });
+      res.status(200).json({ message: "Ator atualizado com sucesso" });
     } catch (error) {
       res.status(500).json({ message: message.messages.actor.errors.default });
     }

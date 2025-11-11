@@ -43,9 +43,6 @@ function checkErrors(body) {
           );
         }
         break;
-      default:
-        errors.push(`O campo "${field}" não é permitido.`);
-        break;
     }
   }
 

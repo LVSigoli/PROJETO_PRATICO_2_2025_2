@@ -5,7 +5,6 @@ class ReviewController {
     this.db = db;
   }
 
-  // GET ALL
   async getAll(req, res) {
     try {
       const result = await this.db.query(
@@ -17,7 +16,6 @@ class ReviewController {
     }
   }
 
-  // GET ONE
   async getOne(req, res) {
     try {
       const { id } = req.params;
@@ -47,7 +45,6 @@ class ReviewController {
     }
   }
 
-  // CREATE REVIEW
   async createReview(req, res) {
     try {
       const { filme_id, nome_avaliador, nota, comentario, recomendado } =
@@ -71,7 +68,6 @@ class ReviewController {
     }
   }
 
-  // UPDATE REVIEW
   async updateReview(req, res) {
     try {
       const { id } = req.params;

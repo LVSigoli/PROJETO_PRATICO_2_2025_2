@@ -47,7 +47,6 @@ function checkUpdateErrors(body) {
         break;
 
       default:
-        errors.push(`O campo "${field}" não é permitido para atualização.`);
         break;
     }
   }
