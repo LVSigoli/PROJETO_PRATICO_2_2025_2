@@ -166,7 +166,7 @@ class ReviewController {
           [id]
         );
 
-        res.status(200).json({ message: "Recurso removido com sucesso" });
+        res.status(204);
       });
     } catch (error) {
       res.status(error.status || 500).json({

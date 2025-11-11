@@ -1,5 +1,5 @@
 const assert = require("chai").assert;
-const app = require("/Users/erickgomes/PROJETO_PRATICO_2_2025_2/src/index.js");
+const app = require("../src/index");
 
 describe("App", function () {
   it("should have express app defined", function () {

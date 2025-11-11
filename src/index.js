@@ -18,8 +18,6 @@ app.use(
 
 app.use("/", routes);
 
-module.exports = app;
-
 if (require.main === module) {
   const port = process.env.PORT || 3000;
   app.listen(port, () => {
@@ -28,3 +26,5 @@ if (require.main === module) {
     console.log(`📘 Documentação: http://localhost:${port}/api-docs`);
   });
 }
+
+module.exports = app;

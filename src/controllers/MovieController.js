@@ -114,7 +114,7 @@ class MovieController {
       if (!result.rows.length)
         res.status(404).json({ message: "Recurso não enontrado" });
 
-      res.status(204).json({ message: "Recurso atualizado com sucesso" });
+      res.status(200).json({ message: "Recurso atualizado com sucesso" });
     } catch (error) {
       res
         .status(500)
