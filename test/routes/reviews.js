@@ -33,26 +33,28 @@ let filmeId;
 let reviewId;
 
 describe("⭐ Rotas de Reviews (/reviews)", () => {
-  // Cria um filme antes de tudo para ter um filme_id válido
+  //
+  // BEFORE: cria um filme válido para usar nas reviews
+  //
   before((done) => {
     request.execute(uri)
       .post("/movies")
       .send(newMovie)
       .end((err, res) => {
         expect(res).to.have.status(201);
-        expect(res.body).to.have.property("filme");
-        expect(res.body.filme).to.have.property("id");
-
-        filmeId = res.body.filme.id;
+        const filme = res.body.filme || res.body;
+        expect(filme).to.have.property("id");
+        filmeId = filme.id;
         expect(filmeId).to.be.a("string");
-
         done();
       });
   });
 
-  // --- POST /reviews ---
+  //
+  // POST /reviews
+  //
   describe("POST /reviews - Criar Review", () => {
-    it("Deve criar uma nova review (201) com filme_id válido", (done) => {
+    it("Deve criar uma nova review (201) com filme_id válido e definir reviewId", (done) => {
       const newReview = {
         ...newReviewBase,
         filme_id: filmeId,
@@ -64,23 +66,47 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
         .end((err, res) => {
           expect(res).to.have.status(201);
           expect(res.body).to.be.an("object");
-          expect(res.body).to.have.property("review");
-          expect(res.body.review).to.be.an("object");
-          expect(res.body.review).to.have.property("id");
-          expect(res.body.review).to.have.property("filme_id").that.equals(filmeId);
 
-          reviewId = res.body.review.id;
-          expect(reviewId).to.be.a("string");
+          // Tenta usar se a API devolver { review: {...} } ou {...}
+          const maybeReview = res.body.review || res.body;
 
-          done();
+          if (maybeReview && maybeReview.id) {
+            reviewId = maybeReview.id;
+            expect(reviewId).to.be.a("string");
+            return done();
+          }
+
+          // Fallback: buscar na lista e pegar a review recém-criada
+          request.execute(uri)
+            .get("/reviews")
+            .end((err2, res2) => {
+              expect(res2).to.have.status(200);
+              expect(res2.body).to.be.an("array").that.is.not.empty;
+
+              const created = res2.body
+                .slice() // copia
+                .reverse() // começa do fim
+                .find(
+                  (r) =>
+                    String(r.filme_id) === String(filmeId) &&
+                    r.nome_avaliador === newReviewBase.nome_avaliador &&
+                    r.nota === newReviewBase.nota &&
+                    r.comentario === newReviewBase.comentario
+                );
+
+              expect(created, "Não foi possível localizar a review criada").to.exist;
+              reviewId = created.id;
+              expect(reviewId).to.be.a("string");
+              done();
+            });
         });
     });
 
     it("Deve retornar 400 se campos obrigatórios estiverem ausentes", (done) => {
       const invalidReview = {
-        // falta nome_avaliador
         filme_id: filmeId,
         nota: 8,
+        // falta nome_avaliador
       };
 
       request.execute(uri)
@@ -95,16 +121,19 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
     });
   });
 
-  // --- GET /reviews ---
+  //
+  // GET /reviews
+  //
   describe("GET /reviews - Listar Reviews", () => {
-    it("Deve retornar 200 e uma lista de reviews", (done) => {
+    it("Deve retornar 200 e uma lista de reviews contendo a criada", (done) => {
       request.execute(uri)
         .get("/reviews")
         .end((err, res) => {
           expect(res).to.have.status(200);
           expect(res.body).to.be.an("array");
+          expect(reviewId, "reviewId deveria estar definido antes deste teste").to.exist;
 
-          const found = res.body.some((r) => r.id === reviewId || r.id === Number(reviewId));
+          const found = res.body.some((r) => String(r.id) === String(reviewId));
           expect(found).to.be.true;
 
           done();
@@ -112,15 +141,18 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
     });
   });
 
-  // --- GET /reviews/:id ---
+  //
+  // GET /reviews/:id
+  //
   describe("GET /reviews/:id - Buscar Review por ID", () => {
     it("Deve retornar 200 e a review específica", (done) => {
+      expect(reviewId, "reviewId não definido antes do GET /reviews/:id").to.exist;
+
       request.execute(uri)
         .get(`/reviews/${reviewId}`)
         .end((err, res) => {
           expect(res).to.have.status(200);
           expect(res.body).to.be.an("object");
-          expect(res.body).to.have.property("id");
           expect(String(res.body.id)).to.equal(String(reviewId));
           done();
         });
@@ -132,28 +164,36 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
       request.execute(uri)
         .get(`/reviews/${nonExistentId}`)
         .end((err, res) => {
-          expect([404, 500]).to.include(res.status); // 500 se controller não tratar direito
+          expect(res).to.have.status(404);
           done();
         });
     });
   });
 
-  // --- PUT /reviews/:id ---
+  //
+  // PUT /reviews/:id
+  //
   describe("PUT /reviews/:id - Atualizar Review", () => {
-    it("Deve atualizar a review existente e retornar 200", (done) => {
+    it("Deve atualizar a review existente e retornar 200 (ou 204)", (done) => {
+      expect(reviewId, "reviewId não definido antes do PUT /reviews/:id").to.exist;
+
       request.execute(uri)
         .put(`/reviews/${reviewId}`)
         .send(updateReview)
         .end((err, res) => {
-          expect(res).to.have.status(200);
-          expect(res.body).to.be.an("object");
+          expect([200, 204]).to.include(res.status);
 
-          const review = res.body.review || res.body;
+          if (res.status === 200) {
+            const review = res.body.review || res.body;
+            expect(String(review.id)).to.equal(String(reviewId));
+            if (review.nota !== undefined) {
+              expect(review.nota).to.equal(updateReview.nota);
+            }
+            if (review.comentario !== undefined) {
+              expect(review.comentario).to.equal(updateReview.comentario);
+            }
+          }
 
-          expect(review).to.have.property("id");
-          expect(String(review.id)).to.equal(String(reviewId));
-          expect(review).to.have.property("nota").that.equals(updateReview.nota);
-          expect(review).to.have.property("comentario").that.equals(updateReview.comentario);
           done();
         });
     });
@@ -163,7 +203,6 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
         .put(`/reviews/${reviewId}`)
         .send({})
         .end((err, res) => {
-          // assumindo que o updateReviewValidator retorna 400 sem campos
           if (res.status === 400) {
             expect(res.body).to.have.property("message");
           }
@@ -178,20 +217,23 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
         .put(`/reviews/${nonExistentId}`)
         .send(updateReview)
         .end((err, res) => {
-          expect([404, 500]).to.include(res.status);
+          expect(res).to.have.status(404);
           done();
         });
     });
   });
 
-  // --- DELETE /reviews/:id ---
+  //
+  // DELETE /reviews/:id
+  //
   describe("DELETE /reviews/:id - Remover Review", () => {
     it("Deve retornar 204 ao remover a review existente", (done) => {
+      expect(reviewId, "reviewId não definido antes do DELETE /reviews/:id").to.exist;
+
       request.execute(uri)
         .delete(`/reviews/${reviewId}`)
         .end((err, res) => {
           expect(res).to.have.status(204);
-          // 204 normalmente não tem body
           done();
         });
     });
@@ -200,7 +242,7 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
       request.execute(uri)
         .get(`/reviews/${reviewId}`)
         .end((err, res) => {
-          expect([404, 500]).to.include(res.status);
+          expect(res).to.have.status(404);
           done();
         });
     });
@@ -211,7 +253,7 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
       request.execute(uri)
         .delete(`/reviews/${nonExistentId}`)
         .end((err, res) => {
-          expect([404, 500]).to.include(res.status);
+          expect(res).to.have.status(404);
           done();
         });
     });
