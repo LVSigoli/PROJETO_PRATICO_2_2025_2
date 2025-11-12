@@ -166,7 +166,7 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
   });
 
   describe("PUT /reviews/:id - Atualizar Review", () => {
-    it("Deve atualizar a review existente e retornar 200 (ou 204)", (done) => {
+    it("Deve atualizar a review existente e retornar 204", (done) => {
       expect(reviewId, "reviewId não definido antes do PUT /reviews/:id").to
         .exist;
 
@@ -175,8 +175,8 @@ describe("⭐ Rotas de Reviews (/reviews)", () => {
         .put(`/reviews/${reviewId}`)
         .send(updateReview)
         .end((err, res) => {
-          expect([200, 204]).to.include(res.status);
-          (res.status === 200)
+          expect(res.status).to.equal(200);
+
           done();
         });
     });

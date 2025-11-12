@@ -121,6 +121,12 @@ class ReviewController {
         values.push(recomendado);
       }
 
+      if (!fields.length) {
+        return res
+          .status(400)
+          .json({ message: "Nenhum campo válido para atualização." });
+      }
+
       values.push(id);
 
       const result = await this.db.query(
@@ -166,7 +172,7 @@ class ReviewController {
           [id]
         );
 
-        res.status(204);
+        res.status(204).send();
       });
     } catch (error) {
       res.status(error.status || 500).json({

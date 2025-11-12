@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS filmes (
   genero VARCHAR(100),
   duracao_min INTEGER,
   lancamento DATE,
-  nota_media NUMERIC(3,2) DEFAULT 0,
+  nota_media NUMERIC(4,2) DEFAULT 0,
   em_cartaz BOOLEAN DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
@@ -59,12 +59,12 @@ BEGIN
   WHERE id = NEW.filme_id;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;  
+$$ LANGUAGE plpgsql;
 
-CREATE TRIGGER IF NOT EXISTS trg_update_filmes_nota_media
+CREATE TRIGGER trg_update_filmes_nota_media
 AFTER INSERT OR UPDATE OR DELETE ON avaliacoes
 FOR EACH ROW
-EXECUTE PROCEDURE update_filme_nota_media(); 
+EXECUTE PROCEDURE update_filme_nota_media();
 
 CREATE INDEX IF NOT EXISTS idx_filmes_deleted_at ON filmes (deleted_at);
 

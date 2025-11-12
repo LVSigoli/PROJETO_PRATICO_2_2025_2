@@ -112,7 +112,6 @@ describe("🎬 Rotas de Filmes (/movies)", () => {
           expect(res).to.have.status(200);
           expect(res.body).to.be.an("object");
           expect(String(res.body.id)).to.equal(String(movieId));
-          // título original antes do update
           expect(res.body).to.have.property("titulo");
           done();
         });
@@ -176,18 +175,15 @@ describe("🎬 Rotas de Filmes (/movies)", () => {
     });
   });
 
-  // --- DELETE /movies/:id ---
   describe("DELETE /movies/:id - Remover Filme (soft delete)", () => {
-    it("Deve retornar 200 e remover o filme", (done) => {
+    it("Deve retornar 204 e remover o filme", (done) => {
       expect(movieId).to.exist;
 
       request
         .execute(uri)
         .delete(`/movies/${movieId}`)
         .end((err, res) => {
-          expect(res).to.have.status(200);
-          expect(res.body).to.be.an("object");
-          expect(res.body).to.have.property("message");
+          expect(res).to.have.status(204);
           done();
         });
     });

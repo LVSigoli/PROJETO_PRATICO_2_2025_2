@@ -60,7 +60,7 @@ class MovieController {
           [id]
         );
 
-        res.status(204);
+        res.status(204).send();
       });
     } catch (error) {
       res
